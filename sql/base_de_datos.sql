@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     aficiones SET('MUSICA', 'LECTURA', 'DEPORTES', 'CINE', 'VIAJES', 'GAMING') NULL,
 
     -- Estadísticas
-    cantidad_juegos INT DEFAULT 0,
+    cantidad_juegos INT DEFAULT 0
 
     -- -- Metadatos
     -- fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

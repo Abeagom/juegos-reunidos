@@ -76,7 +76,7 @@ export const ComponenteHeader = {
 
         document.getElementById("logout")?.addEventListener("click", (e) => {
             e.preventDefault();
-            usuario?.logout();
+            Usuario.logout();
             window.location.reload(); // Recargamos para limpiar el estado
         });
     }

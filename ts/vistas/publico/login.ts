@@ -60,19 +60,25 @@ export const VistaLogin = {
                 return;
             }
 
-            //Comprobamos el login con usuario y contraseña, si es correcto se redirige a la página de inicio correspondiente al tipo de usuario
-            if (Usuario.login(nombre, contrasena)) {
-                // Redirigimos según el tipo de usuario
-                if (Usuario.obtenerUsuarioLogeado()?.tipo === "admin") {
-                    window.location.hash = "#/inicio-admin";
-                } else if (Usuario.obtenerUsuarioLogeado()?.tipo === "logeado") {
-                    window.location.hash = "#/inicio-usuario";
+            try {
+                //Comprobamos el login con usuario y contraseña, si es correcto se redirige a la página de inicio correspondiente al tipo de usuario
+                if (Usuario.login(nombre, contrasena)) {
+                    const usuarioLogeado = Usuario.obtenerUsuarioLogeado();
+                    // Redirigimos según el tipo de usuario
+                    if (usuarioLogeado?.tipo === "admin") {
+                        window.location.hash = "#/inicio-admin";
+                    } else if (usuarioLogeado?.tipo === "logeado") {
+                        window.location.hash = "#/inicio-usuario";
+                    } else {
+                        window.location.hash = "#/";
+                    }
                 } else {
-                    window.location.hash = "#/";
+                    mostrarError("El nombre de usuario o la contraseña no son correctos");
                 }
-            }else{
-                mostrarError("El nombre de usuario o la contraseña no son correctos");
+            } catch (error) {
+                mostrarError("Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo más tarde.");
             }
+
 
                 // const usuariosGuardados: Usuario[] = JSON.parse(
                 //     localStorage.getItem("usuarios") || "[]"

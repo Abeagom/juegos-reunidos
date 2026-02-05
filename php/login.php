@@ -1,25 +1,52 @@
 <?php
+header('Content-Type: application/json');
 
-$nombreUsuario = $_POST['nombreLogin'];
-$contrasena = $_POST['contrasenaLogin'];
+// Leer los datos que vienen del JSON de TypeScript
+$json = file_get_contents('php://input');
+$datosRecibidos = json_decode($json, true);
 
-include 'conexion_bd.php';
+$nombre = $datosRecibidos['nombre'] ?? '';
+$contrasena = $datosRecibidos['contrasena'] ?? '';
 
-$sql = "SELECT * FROM usuarios WHERE nombreUsuario = '$nombreUsuario' AND contrasena = '$contrasena'";
-$result = $conn->query($sql);
+$servername = "localhost";
+$database = "juegos_reunidos";
+$username = "root";
+$password = "";
+
+$conn = new mysqli($servername, $username, $password, $database);
+
+if ($conn->connect_error) {
+    echo json_encode(["exito" => false, "error" => "Error de conexión"]);
+    exit;
+}
+
+$stmt = $conn->prepare("SELECT id, nombre, email, tipo, fecha_nacimiento, telefono, sexo, dispositivos, aficiones, cantidad_juegos FROM usuarios WHERE nombre = ? AND contrasena = ?");
+$stmt->bind_param("ss", $nombre, $contrasena);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $rawdata = array();
+$i = 0;
 
-$i=0;
-
-while($row = mysqli_fetch_assoc($result)) {
-
+while($row = mysqli_fetch_assoc($result))
+{
     $rawdata[$i] = $row;
     $i++;
 }
 
+// Lógica para que el Frontend entienda si el login fue correcto
+if ($i > 0) {
+    echo json_encode([
+        "exito" => true, 
+        "usuario" => $rawdata[0] // Enviamos el primer usuario encontrado
+    ]);
+} else {
+    echo json_encode([
+        "exito" => false, 
+        "mensaje" => "Credenciales incorrectas"
+    ]);
+}
+
+$stmt->close();
 $conn->close();
-echo json_encode($rawdata);
-
-
 ?>

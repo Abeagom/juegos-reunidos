@@ -42,10 +42,10 @@ export class Usuario {
      * Es estático porque aún no tenemos una instancia del usuario cuando intentamos loguearnos.
      */
 
-    static login(nombreUsuario: string, contrasena: string): String respuesta {
+    static login(nombreUsuario: string, contrasena: string): boolean {
 
         //Ruta del archivo
-        const ruta = "../../php/login.php"
+        const ruta = "./php/login.php";
 
         // Crear objeto Ajax
         var xhr = new XMLHttpRequest();
@@ -57,43 +57,33 @@ export class Usuario {
 
         xhr.send(JSON.stringify({ nombre: nombreUsuario, contrasena: contrasena }));
 
-        xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                try {
-                    //Recibir respuesta del servidor en JSON
-                    var datos = JSON.parse(this.responseText);
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            //Recibir respuesta del servidor en JSON
+            var datos = JSON.parse(xhr.responseText);
+            console.log(datos);
 
-                    if (datos.exito && datos.usuario) {
-                        // Guardamos en localStorage (sin la contraseña) para mantener la sesión
-                        localStorage.setItem("usuario", JSON.stringify(datos.usuario));
-                        resultado = true;
-                    }
-                } catch (error) {
-                    console.error("Error en login:", error);
-                }
+            if (datos.exito && datos.usuario) {
+                // Guardamos en localStorage (sin la contraseña) para mantener la sesión
+                localStorage.setItem("usuario", JSON.stringify(datos.usuario));
+                resultado = true;
             }
         };
+        return resultado;
     }
 
 
     /**
-     * Cierra sesión en el backend y limpia el frontend. MODIFICAR
+     * Cierra sesión quitando el usuario del localStorage.
      */
-    static async logout(): Promise<void> {
-        try {
-            // Avisamos al backend para que destruya la sesión PHP
-            await fetch('./php/api/logout.php');
-        } catch (error) {
-            console.error("Error al cerrar sesión en servidor", error);
-        } finally {
-            // Limpiamos el frontend independientemente de si el backend respondió bien
-            localStorage.removeItem("usuario");
-            window.location.hash = "#/";
-            window.location.reload();
-        }
+    static logout(): void {
+        localStorage.removeItem("usuario");
+
+        //Redirigimos al usuario a la vista de inicio
+        window.location.hash = "#/";
+
     }
 
-    // Mantenemos este método para recuperar los datos visuales rápidamente
+    // Obtiene el usuario logeado desde el localStorage, o null si no hay ninguno
     static obtenerUsuarioLogeado(): Usuario | null {
         const usuarioJSON = localStorage.getItem("usuario");
         if (!usuarioJSON) return null;
@@ -119,8 +109,6 @@ export class Usuario {
             return null;
         }
     }
-
-
 }
 
 enum Sexo {

@@ -53,26 +53,49 @@ export const VistaLogin = {
                 mostrarError("Nombre y contraseña son obligatorios");
                 return;
             }
-            const usuariosGuardados = JSON.parse(localStorage.getItem("usuarios") || "[]");
-            let usuario;
-            for (let u of usuariosGuardados) {
-                if (u.nombre === nombre && u.contrasena === contrasena) {
-                    usuario = new Usuario(u.nombre, u.tipo, u.contrasena);
-                    break;
+            try {
+                //Comprobamos el login con usuario y contraseña, si es correcto se redirige a la página de inicio correspondiente al tipo de usuario
+                if (Usuario.login(nombre, contrasena)) {
+                    const usuarioLogeado = Usuario.obtenerUsuarioLogeado();
+                    // Redirigimos según el tipo de usuario
+                    if (usuarioLogeado?.tipo === "admin") {
+                        window.location.hash = "#/inicio-admin";
+                    }
+                    else if (usuarioLogeado?.tipo === "logeado") {
+                        window.location.hash = "#/inicio-usuario";
+                    }
+                    else {
+                        window.location.hash = "#/";
+                    }
+                }
+                else {
+                    mostrarError("El nombre de usuario o la contraseña no son correctos");
                 }
             }
-            if (usuario) {
-                // 1. Guardamos la sesión en LocalStorage
-                usuario.login();
-                // 2. Redirigimos a la raíz de la SPA
-                // Ya no importa si es admin o logeado, el enrutador lo decidirá
-                window.location.hash = "#/inicio-usuario";
-                // 3. Forzamos recarga para que general.ts detecte al nuevo usuario
-                window.location.reload();
+            catch (error) {
+                mostrarError("Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo más tarde.");
             }
-            else {
-                mostrarError("El nombre de usuario o la contraseña no son correctos");
-            }
+            // const usuariosGuardados: Usuario[] = JSON.parse(
+            //     localStorage.getItem("usuarios") || "[]"
+            // );
+            // let usuario: Usuario | undefined;
+            // for (let u of usuariosGuardados) {
+            //     if (u.nombre === nombre && u.contrasena === contrasena) {
+            //         usuario = new Usuario(u.nombre, u.tipo, u.contrasena);
+            //         break;
+            //     }
+            // }
+            // if (usuario) {
+            //     // 1. Guardamos la sesión en LocalStorage
+            //     usuario.login();
+            //     // 2. Redirigimos a la raíz de la SPA
+            //     // Ya no importa si es admin o logeado, el enrutador lo decidirá
+            //     window.location.hash = "#/inicio-usuario";
+            //     // 3. Forzamos recarga para que general.ts detecte al nuevo usuario
+            //     window.location.reload();
+            // } else {
+            //     mostrarError("El nombre de usuario o la contraseña no son correctos");
+            // }
         });
         // Función para mostrar el error usando alertas de Bootstrap
         function mostrarError(mensaje) {

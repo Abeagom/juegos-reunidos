@@ -8,46 +8,106 @@ import { VistaContacto } from '../vistas/publico/contacto.js';
 import { VistaInicioUsuario } from '../vistas/usuario/inicio-usuario.js';
 import { VistaEditarPerfil } from '../vistas/usuario/editar-perfil.js';
 // ----------------------
-// 1. CLASE USUARIO
+// CLASE USUARIO
 // ----------------------
 export class Usuario {
     nombre;
     tipo;
     contrasena;
-    constructor(nombre, tipo, contrasena) {
+    email;
+    fechaNacimiento;
+    telefono;
+    sexo;
+    dispositivos;
+    aficiones;
+    cantidadJuegos;
+    constructor(nombre, tipo, contrasena, email, fechaNacimiento, telefono, sexo, dispositivos, aficiones, cantidadJuegos) {
         this.nombre = nombre;
         this.tipo = tipo;
         this.contrasena = contrasena;
+        this.email = email;
+        this.fechaNacimiento = fechaNacimiento;
+        this.telefono = telefono;
+        this.sexo = sexo;
+        this.dispositivos = dispositivos;
+        this.aficiones = aficiones;
+        this.cantidadJuegos = cantidadJuegos;
     }
-    login() {
-        localStorage.setItem("usuario", JSON.stringify(this));
-        // Al usar SPA, el enrutador se encargará de refrescar la vista
+    /**
+     * Realiza la petición al backend para iniciar sesión.
+     * Es estático porque aún no tenemos una instancia del usuario cuando intentamos loguearnos.
+     */
+    static login(nombreUsuario, contrasena) {
+        //Ruta del archivo
+        const ruta = "./php/login.php";
+        // Crear objeto Ajax
+        var xhr = new XMLHttpRequest();
+        let resultado = false;
+        xhr.open("POST", ruta, false);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify({ nombre: nombreUsuario, contrasena: contrasena }));
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            //Recibir respuesta del servidor en JSON
+            var datos = JSON.parse(xhr.responseText);
+            console.log(datos);
+            if (datos.exito && datos.usuario) {
+                // Guardamos en localStorage (sin la contraseña) para mantener la sesión
+                localStorage.setItem("usuario", JSON.stringify(datos.usuario));
+                resultado = true;
+            }
+        }
+        ;
+        return resultado;
     }
-    logout() {
+    /**
+     * Cierra sesión quitando el usuario del localStorage.
+     */
+    static logout() {
         localStorage.removeItem("usuario");
+        //Redirigimos al usuario a la vista de inicio/login
         window.location.hash = "#/";
-        window.location.reload();
     }
+    // Mantenemos este método para recuperar los datos visuales rápidamente
     static obtenerUsuarioLogeado() {
         const usuarioJSON = localStorage.getItem("usuario");
         if (!usuarioJSON)
             return null;
-        const usuario = JSON.parse(usuarioJSON);
-        return new Usuario(usuario.nombre, usuario.tipo, usuario.contrasena);
+        try {
+            const usuario = JSON.parse(usuarioJSON);
+            // Aseguramos que se instancie correctamente con todos los campos
+            return new Usuario(usuario.nombre, usuario.tipo, "", // No guardamos la contraseña en localStorage por seguridad
+            usuario.email, new Date(usuario.fechaNacimiento), usuario.telefono, usuario.sexo, usuario.dispositivos, usuario.aficiones, usuario.cantidadJuegos);
+        }
+        catch (e) {
+            console.error("Error al leer usuario del storage", e);
+            localStorage.removeItem("usuario");
+            return null;
+        }
     }
 }
+var Sexo;
+(function (Sexo) {
+    Sexo[Sexo["MASCULINO"] = 0] = "MASCULINO";
+    Sexo[Sexo["FEMENINO"] = 1] = "FEMENINO";
+    Sexo[Sexo["OTRO"] = 2] = "OTRO";
+})(Sexo || (Sexo = {}));
+var Dispositivo;
+(function (Dispositivo) {
+    Dispositivo[Dispositivo["MOVIL"] = 0] = "MOVIL";
+    Dispositivo[Dispositivo["PC"] = 1] = "PC";
+    Dispositivo[Dispositivo["TABLET"] = 2] = "TABLET";
+})(Dispositivo || (Dispositivo = {}));
+var Aficion;
+(function (Aficion) {
+    Aficion[Aficion["MUSICA"] = 0] = "MUSICA";
+    Aficion[Aficion["LECTURA"] = 1] = "LECTURA";
+    Aficion[Aficion["DEPORTES"] = 2] = "DEPORTES";
+    Aficion[Aficion["CINE"] = 3] = "CINE";
+    Aficion[Aficion["VIAJES"] = 4] = "VIAJES";
+    Aficion[Aficion["GAMING"] = 5] = "GAMING";
+})(Aficion || (Aficion = {}));
 // ----------------------
-// 2. INICIALIZACIÓN DE DATOS
-// ----------------------
-if (!localStorage.getItem("usuarios")) {
-    const usuariosPredefinidos = [
-        { nombre: "admin", tipo: "admin", contrasena: "admin123" },
-        { nombre: "usuario", tipo: "logeado", contrasena: "usuario123" }
-    ];
-    localStorage.setItem("usuarios", JSON.stringify(usuariosPredefinidos));
-}
-// ----------------------
-// 3. EL ENRUTADOR (MOTOR SPA)
+// ENRUTADOR
 // ----------------------
 const enrutador = () => {
     const contenedor = document.getElementById("app");
@@ -94,10 +154,9 @@ const enrutador = () => {
         contenedor.innerHTML = VistaEditarPerfil.plantilla();
         VistaEditarPerfil.logica();
     }
-    // Aquí irás añadiendo: else if (ruta === "#/login") { ... }
 };
 // ----------------------
-// 4. EJECUCIÓN INICIAL
+// EJECUCIÓN INICIAL
 // ----------------------
 const iniciarApp = () => {
     // 1. Pintamos el Header
