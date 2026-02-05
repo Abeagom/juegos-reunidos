@@ -65,9 +65,9 @@ export const VistaLogin = {
                 if (Usuario.login(nombre, contrasena)) {
                     const usuarioLogeado = Usuario.obtenerUsuarioLogeado();
                     // Redirigimos según el tipo de usuario
-                    if (usuarioLogeado?.tipo === "admin") {
+                    if (usuarioLogeado?.tipo === "ADMIN") {
                         window.location.hash = "#/inicio-admin";
-                    } else if (usuarioLogeado?.tipo === "logeado") {
+                    } else if (usuarioLogeado?.tipo === "LOGEADO") {
                         window.location.hash = "#/inicio-usuario";
                     } else {
                         window.location.hash = "#/";

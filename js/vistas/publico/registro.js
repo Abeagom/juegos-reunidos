@@ -558,24 +558,44 @@ export const VistaRegistro = {
             }
             // SI TODO ESTÁ CORRECTO
             if (formularioValido) {
-                if (formMensaje) {
-                    formMensaje.textContent = "¡Registro completado con éxito! Redirigiendo...";
-                    // Bootstrap: alert (caja), alert-success (verde), mt-3 (margen top), d-block (mostrar)
-                    formMensaje.className = "alert alert-success mt-3 d-block";
-                }
-                // Creamos el nuevo objeto usuario (Asegúrate de tener la clase Usuario importada/definida)
-                const nuevoUsuario = new Usuario(nombreInput.value, "logeado", contrasenaInput.value);
-                // Recuperar la lista actual de usuarios del LocalStorage
-                const usuariosTexto = localStorage.getItem("usuarios") || "[]";
-                const listaUsuarios = JSON.parse(usuariosTexto);
-                // Añadir nuestro nuevo usuario a esa lista
-                listaUsuarios.push(nuevoUsuario);
-                // Guardar la lista actualizada de nuevo en el LocalStorage
-                localStorage.setItem("usuarios", JSON.stringify(listaUsuarios));
-                // Redirección tras 2 segundos
-                setTimeout(() => {
-                    window.location.hash = "#/login";
-                }, 2000);
+                // Para el campo SET de MySQL necesitamos strings separados por comas
+                const aficionesMarcadas = Array.from(checkboxesMarcados)
+                    .map(cb => cb.value.toUpperCase())
+                    .join(',');
+                // Preparamos el objeto para enviar al PHP
+                // Usamos los nombres exactos de las columnas en la BD
+                const datosRegistro = {
+                    nombre: nombreInput.value,
+                    email: emailInput.value,
+                    contrasena: contrasenaInput.value,
+                    tipo: 'LOGEADO',
+                    fecha_nacimiento: fechaNacimientoInput.value,
+                    telefono: telefonoInput.value,
+                    sexo: obtenerSexoSeleccionado()?.toUpperCase(),
+                    dispositivo: dispositivoSelect.value.toUpperCase(),
+                    aficiones: aficionesMarcadas,
+                    cantidad_juegos: parseInt(juegosInput.value) || 0
+                };
+                Usuario.registrar(datosRegistro)
+                    .done(function (respuesta) {
+                    // "respuesta" es el JSON que envía el PHP
+                    if (respuesta.exito) {
+                        $("#formMensaje").attr("class", "alert alert-success mt-3 d-block")
+                            .text("¡Registro guardado! Redirigiendo...");
+                        setTimeout(function () {
+                            window.location.hash = "#/login";
+                        }, 2000);
+                    }
+                    else {
+                        $("#formMensaje").attr("class", "alert alert-danger mt-3 d-block")
+                            .text("Error: " + respuesta.mensaje);
+                    }
+                })
+                    .fail(function () {
+                    // Por si el servidor explota o el archivo PHP no existe
+                    $("#formMensaje").attr("class", "alert alert-danger mt-3 d-block")
+                        .text("No se pudo conectar con el servidor.");
+                });
                 // SI ALGO NO ESTÁ CORRECTO
             }
             else {
@@ -635,20 +655,28 @@ export const VistaRegistro = {
                 }
             }
         }
-        function comprobarDisponibilidadNombre(nombreABuscar) {
-            // Obtenemos los usuarios del localStorage
-            const datosUsuarios = localStorage.getItem("usuarios");
-            // Si no hay datos, significa que el nombre está disponible (porque no hay nadie)
-            if (!datosUsuarios) {
-                return true;
-            }
-            // Convertimos el texto del localStorage en un array de objetos
-            const usuariosExistentes = JSON.parse(datosUsuarios);
-            // Buscamos si algún usuario tiene ese nombre (ignorando mayúsculas/minúsculas)
-            const existe = usuariosExistentes.some((u) => u.nombre.toLowerCase() === nombreABuscar.toLowerCase());
-            // Si existe, devolvemos false (no está disponible)
-            return !existe;
-        }
+        // Función genérica para validar disponibilidad
+        const validarUnico = (idInput, nombreCampo, mensajeError) => {
+            $(`#${idInput}`).on("blur", function () {
+                const valor = $(this).val();
+                if (!valor)
+                    return; // Si está vacío no comprobamos
+                $.get(`./php/comprobar.php?campo=${nombreCampo}&valor=${valor}`, (res) => {
+                    if (res.ocupado) {
+                        $(this).addClass("is-invalid").removeClass("is-valid");
+                        // Suponiendo que tienes un div de error con clase 'invalid-feedback'
+                        $(`#error-${idInput}`).text(mensajeError).show();
+                    }
+                    else {
+                        $(this).addClass("is-valid").removeClass("is-invalid");
+                        $(`#error-${idInput}`).hide();
+                    }
+                });
+            });
+        };
+        // La usas así de fácil:
+        validarUnico("nombreRegistro", "nombre", "Este nombre ya está pillado");
+        validarUnico("emailRegistro", "email", "Este email ya está registrado");
         // Comprobar si tiene al menos un número
         function tieneNumero(texto) {
             const patron = /\d/; // El símbolo \d busca cualquier dígito del 0 al 9

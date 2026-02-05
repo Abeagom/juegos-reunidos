@@ -18,10 +18,10 @@ export class Usuario {
     fechaNacimiento;
     telefono;
     sexo;
-    dispositivos;
+    dispositivo;
     aficiones;
     cantidadJuegos;
-    constructor(nombre, tipo, contrasena, email, fechaNacimiento, telefono, sexo, dispositivos, aficiones, cantidadJuegos) {
+    constructor(nombre, tipo, contrasena, email, fechaNacimiento, telefono, sexo, dispositivo, aficiones, cantidadJuegos) {
         this.nombre = nombre;
         this.tipo = tipo;
         this.contrasena = contrasena;
@@ -29,7 +29,7 @@ export class Usuario {
         this.fechaNacimiento = fechaNacimiento;
         this.telefono = telefono;
         this.sexo = sexo;
-        this.dispositivos = dispositivos;
+        this.dispositivo = dispositivo;
         this.aficiones = aficiones;
         this.cantidadJuegos = cantidadJuegos;
     }
@@ -49,7 +49,6 @@ export class Usuario {
         if (xhr.readyState == 4 && xhr.status == 200) {
             //Recibir respuesta del servidor en JSON
             var datos = JSON.parse(xhr.responseText);
-            console.log(datos);
             if (datos.exito && datos.usuario) {
                 // Guardamos en localStorage (sin la contraseña) para mantener la sesión
                 localStorage.setItem("usuario", JSON.stringify(datos.usuario));
@@ -64,10 +63,19 @@ export class Usuario {
      */
     static logout() {
         localStorage.removeItem("usuario");
-        //Redirigimos al usuario a la vista de inicio/login
+        //Redirigimos al usuario a la vista de inicio
         window.location.hash = "#/";
     }
-    // Mantenemos este método para recuperar los datos visuales rápidamente
+    static registrar(datos) {
+        // Ponemos return para que el formulario pueda usar el .done() y .fail()
+        return $.ajax({
+            url: "./php/registro.php",
+            type: "POST",
+            data: JSON.stringify(datos),
+            contentType: "application/json"
+        });
+    }
+    // Obtiene el usuario logeado desde el localStorage, o null si no hay ninguno
     static obtenerUsuarioLogeado() {
         const usuarioJSON = localStorage.getItem("usuario");
         if (!usuarioJSON)
@@ -76,35 +84,40 @@ export class Usuario {
             const usuario = JSON.parse(usuarioJSON);
             // Aseguramos que se instancie correctamente con todos los campos
             return new Usuario(usuario.nombre, usuario.tipo, "", // No guardamos la contraseña en localStorage por seguridad
-            usuario.email, new Date(usuario.fechaNacimiento), usuario.telefono, usuario.sexo, usuario.dispositivos, usuario.aficiones, usuario.cantidadJuegos);
+            usuario.email, new Date(usuario.fechaNacimiento), usuario.telefono, usuario.sexo, usuario.dispositivo, usuario.aficiones, usuario.cantidadJuegos);
         }
         catch (e) {
-            console.error("Error al leer usuario del storage", e);
+            console.error("Error al leer usuario del localStorage", e);
             localStorage.removeItem("usuario");
             return null;
         }
     }
 }
+var TipoUsuario;
+(function (TipoUsuario) {
+    TipoUsuario["ADMIN"] = "ADMIN";
+    TipoUsuario["LOGEADO"] = "LOGEADO";
+})(TipoUsuario || (TipoUsuario = {}));
 var Sexo;
 (function (Sexo) {
-    Sexo[Sexo["MASCULINO"] = 0] = "MASCULINO";
-    Sexo[Sexo["FEMENINO"] = 1] = "FEMENINO";
-    Sexo[Sexo["OTRO"] = 2] = "OTRO";
+    Sexo["MASCULINO"] = "MASCULINO";
+    Sexo["FEMENINO"] = "FEMENINO";
+    Sexo["OTRO"] = "OTRO";
 })(Sexo || (Sexo = {}));
 var Dispositivo;
 (function (Dispositivo) {
-    Dispositivo[Dispositivo["MOVIL"] = 0] = "MOVIL";
-    Dispositivo[Dispositivo["PC"] = 1] = "PC";
-    Dispositivo[Dispositivo["TABLET"] = 2] = "TABLET";
+    Dispositivo["MOVIL"] = "MOVIL";
+    Dispositivo["PC"] = "PC";
+    Dispositivo["TABLET"] = "TABLET";
 })(Dispositivo || (Dispositivo = {}));
 var Aficion;
 (function (Aficion) {
-    Aficion[Aficion["MUSICA"] = 0] = "MUSICA";
-    Aficion[Aficion["LECTURA"] = 1] = "LECTURA";
-    Aficion[Aficion["DEPORTES"] = 2] = "DEPORTES";
-    Aficion[Aficion["CINE"] = 3] = "CINE";
-    Aficion[Aficion["VIAJES"] = 4] = "VIAJES";
-    Aficion[Aficion["GAMING"] = 5] = "GAMING";
+    Aficion["MUSICA"] = "MUSICA";
+    Aficion["LECTURA"] = "LECTURA";
+    Aficion["DEPORTES"] = "DEPORTES";
+    Aficion["CINE"] = "CINE";
+    Aficion["VIAJES"] = "VIAJES";
+    Aficion["GAMING"] = "GAMING";
 })(Aficion || (Aficion = {}));
 // ----------------------
 // ENRUTADOR

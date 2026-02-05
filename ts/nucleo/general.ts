@@ -13,18 +13,18 @@ import { VistaEditarPerfil } from '../vistas/usuario/editar-perfil.js';
 // ----------------------
 export class Usuario {
     nombre: string;
-    tipo: string;
+    tipo: TipoUsuario;
     contrasena: string;
     email: string;
     fechaNacimiento: Date;
     telefono: string;
     sexo: Sexo;
-    dispositivos: Dispositivo[];
+    dispositivo: Dispositivo;
     aficiones: Aficion[];
     cantidadJuegos: number;
 
 
-    constructor(nombre: string, tipo: string, contrasena: string, email: string, fechaNacimiento: Date, telefono: string, sexo: Sexo, dispositivos: Dispositivo[], aficiones: Aficion[], cantidadJuegos: number) {
+    constructor(nombre: string, tipo: TipoUsuario, contrasena: string, email: string, fechaNacimiento: Date, telefono: string, sexo: Sexo, dispositivo: Dispositivo, aficiones: Aficion[], cantidadJuegos: number) {
         this.nombre = nombre;
         this.tipo = tipo;
         this.contrasena = contrasena;
@@ -32,7 +32,7 @@ export class Usuario {
         this.fechaNacimiento = fechaNacimiento;
         this.telefono = telefono;
         this.sexo = sexo;
-        this.dispositivos = dispositivos;
+        this.dispositivo = dispositivo;
         this.aficiones = aficiones;
         this.cantidadJuegos = cantidadJuegos;
     }
@@ -60,7 +60,6 @@ export class Usuario {
         if (xhr.readyState == 4 && xhr.status == 200) {
             //Recibir respuesta del servidor en JSON
             var datos = JSON.parse(xhr.responseText);
-            console.log(datos);
 
             if (datos.exito && datos.usuario) {
                 // Guardamos en localStorage (sin la contraseña) para mantener la sesión
@@ -71,7 +70,6 @@ export class Usuario {
         return resultado;
     }
 
-
     /**
      * Cierra sesión quitando el usuario del localStorage.
      */
@@ -81,6 +79,16 @@ export class Usuario {
         //Redirigimos al usuario a la vista de inicio
         window.location.hash = "#/";
 
+    }
+
+    static registrar(datos: any) {
+        // Ponemos return para que el formulario pueda usar el .done() y .fail()
+        return $.ajax({
+            url: "./php/registro.php",
+            type: "POST",
+            data: JSON.stringify(datos),
+            contentType: "application/json"
+        });
     }
 
     // Obtiene el usuario logeado desde el localStorage, o null si no hay ninguno
@@ -99,37 +107,41 @@ export class Usuario {
                 new Date(usuario.fechaNacimiento),
                 usuario.telefono,
                 usuario.sexo,
-                usuario.dispositivos,
+                usuario.dispositivo,
                 usuario.aficiones,
                 usuario.cantidadJuegos,
             );
         } catch (e) {
-            console.error("Error al leer usuario del storage", e);
+            console.error("Error al leer usuario del localStorage", e);
             localStorage.removeItem("usuario");
             return null;
         }
     }
 }
 
+enum TipoUsuario {
+    ADMIN = "ADMIN",
+    LOGEADO = "LOGEADO"
+}
 enum Sexo {
-    MASCULINO,
-    FEMENINO,
-    OTRO
+    MASCULINO = "MASCULINO",
+    FEMENINO = "FEMENINO",
+    OTRO = "OTRO"
 }
 
 enum Dispositivo {
-    MOVIL,
-    PC,
-    TABLET
+    MOVIL = "MOVIL",
+    PC = "PC",
+    TABLET = "TABLET"
 }
 
 enum Aficion {
-    MUSICA,
-    LECTURA,
-    DEPORTES,
-    CINE,
-    VIAJES,
-    GAMING
+    MUSICA = "MUSICA",
+    LECTURA = "LECTURA",
+    DEPORTES = "DEPORTES",
+    CINE = "CINE",
+    VIAJES = "VIAJES",
+    GAMING = "GAMING"
 }
 
 // ----------------------

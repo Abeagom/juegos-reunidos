@@ -607,33 +607,46 @@ export const VistaRegistro = {
             // SI TODO ESTÁ CORRECTO
             if (formularioValido) {
 
-                if (formMensaje) {
-                    formMensaje.textContent = "¡Registro completado con éxito! Redirigiendo...";
-                    // Bootstrap: alert (caja), alert-success (verde), mt-3 (margen top), d-block (mostrar)
-                    formMensaje.className = "alert alert-success mt-3 d-block";
-                }
+                // Para el campo SET de MySQL necesitamos strings separados por comas
+                const aficionesMarcadas = Array.from(checkboxesMarcados)
+                    .map(cb => cb.value.toUpperCase())
+                    .join(',');
 
-                // Creamos el nuevo objeto usuario (Asegúrate de tener la clase Usuario importada/definida)
-                const nuevoUsuario = new Usuario(
-                    nombreInput!.value,
-                    "logeado",
-                    contrasenaInput!.value
-                );
+                // Preparamos el objeto para enviar al PHP
+                // Usamos los nombres exactos de las columnas en la BD
+                const datosRegistro = {
+                    nombre: nombreInput!.value,
+                    email: emailInput!.value,
+                    contrasena: contrasenaInput!.value,
+                    tipo: 'LOGEADO',
+                    fecha_nacimiento: fechaNacimientoInput!.value,
+                    telefono: telefonoInput!.value,
+                    sexo: obtenerSexoSeleccionado()?.toUpperCase(),
+                    dispositivo: dispositivoSelect!.value.toUpperCase(),
+                    aficiones: aficionesMarcadas,
+                    cantidad_juegos: parseInt(juegosInput!.value) || 0
+                };
 
-                // Recuperar la lista actual de usuarios del LocalStorage
-                const usuariosTexto = localStorage.getItem("usuarios") || "[]";
-                const listaUsuarios = JSON.parse(usuariosTexto);
+                Usuario.registrar(datosRegistro)
+                    .done(function (respuesta) {
+                        // "respuesta" es el JSON que envía el PHP
+                        if (respuesta.exito) {
+                            $("#formMensaje").attr("class", "alert alert-success mt-3 d-block")
+                                .text("¡Registro guardado! Redirigiendo...");
 
-                // Añadir nuestro nuevo usuario a esa lista
-                listaUsuarios.push(nuevoUsuario);
-
-                // Guardar la lista actualizada de nuevo en el LocalStorage
-                localStorage.setItem("usuarios", JSON.stringify(listaUsuarios));
-
-                // Redirección tras 2 segundos
-                setTimeout(() => {
-                    window.location.hash = "#/login";
-                }, 2000);
+                            setTimeout(function () {
+                                window.location.hash = "#/login";
+                            }, 2000);
+                        } else {
+                            $("#formMensaje").attr("class", "alert alert-danger mt-3 d-block")
+                                .text("Error: " + respuesta.mensaje);
+                        }
+                    })
+                    .fail(function () {
+                        // Por si el servidor explota o el archivo PHP no existe
+                        $("#formMensaje").attr("class", "alert alert-danger mt-3 d-block")
+                            .text("No se pudo conectar con el servidor.");
+                    });
 
                 // SI ALGO NO ESTÁ CORRECTO
             } else {

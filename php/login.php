@@ -20,7 +20,7 @@ if ($conn->connect_error) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id, nombre, email, tipo, fecha_nacimiento, telefono, sexo, dispositivos, aficiones, cantidad_juegos FROM usuarios WHERE nombre = ? AND contrasena = ?");
+$stmt = $conn->prepare("SELECT id, nombre, email, tipo, fecha_nacimiento, telefono, sexo, dispositivo, aficiones, cantidad_juegos FROM usuarios WHERE nombre = ? AND contrasena = ?");
 $stmt->bind_param("ss", $nombre, $contrasena);
 $stmt->execute();
 $result = $stmt->get_result();

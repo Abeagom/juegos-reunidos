@@ -58,7 +58,7 @@ export const ComponenteHeader = {
         links.forEach((link) => {
             const el = link as HTMLElement;
             // Si el link tiene la clase del tipo de usuario actual, se muestra
-            if (el.classList.contains(tipo)) {
+            if (el.classList.contains(tipo.toLowerCase())) {
                 el.style.setProperty("display", "inline-block", "important");
             } else {
                 // Si tiene alguna de las otras etiquetas de rol pero no la nuestra, se oculta
