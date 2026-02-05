@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",             /* Versión de JS moderna */
+    "module": "ESNext",             /* Necesario para usar imports/exports en el navegador */
+    "lib": ["DOM", "ESNext"],       /* Para que reconozca document, window, etc. */
+    "moduleResolution": "node",     /* Ayuda a TS a encontrar los archivos */
+    "outDir": "./js",               /* TODO el JS compilado irá aquí */
+    "rootDir": "./ts",              /* TODO el TS original está aquí */
+    "strict": true,                 /* Te ayuda a evitar errores de código */
+    "noImplicitAny": false,         /* Menos estricto con los tipos para no volverte loco ahora */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["ts/**/*.ts"]         /* Compila cualquier .ts dentro de la carpeta ts */
+}
