@@ -50,7 +50,7 @@ export const VistaRegistro = {
                         <span class="material-icons fs-6">close</span> Un número
                     </small>
                     <small id="contrasenaEspecial" class="text-muted d-flex align-items-center gap-2">
-                        <span class="material-icons fs-6">close</span> Carácter especial (!@#$%^&*...)
+                        <span class="material-icons fs-6">close</span> Carácter especial (!@#$_%^&*...)
                     </small>
                 </div>
                 <small id="contrasenaVacia" class="text-danger fw-bold d-none mt-1">La contraseña no puede estar vacía</small>
@@ -88,12 +88,12 @@ export const VistaRegistro = {
                 <label class="form-label fw-bold d-block">Sexo:</label>
                 <div class="d-flex gap-3 pt-1">
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoH" value="hombre">
-                        <label class="form-check-label" for="sexoH">Hombre</label>
+                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoH" value="masculino">
+                        <label class="form-check-label" for="sexoH">Masculino</label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoM" value="mujer">
-                        <label class="form-check-label" for="sexoM">Mujer</label>
+                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoM" value="femenino">
+                        <label class="form-check-label" for="sexoM">Femenino</label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoO" value="otro">
@@ -497,7 +497,7 @@ export const VistaRegistro = {
             }
             // VALIDACIÓN DE SEXO
             const sexoValor = obtenerSexoSeleccionado();
-            const sexosPermitidos = ["hombre", "mujer", "otro"];
+            const sexosPermitidos = ["masculino", "femenino", "otro"];
             if (!sexoValor || !sexosPermitidos.includes(sexoValor)) {
                 mostrarError("sexoVacio", true);
                 formularioValido = false;
@@ -655,28 +655,20 @@ export const VistaRegistro = {
                 }
             }
         }
-        // Función genérica para validar disponibilidad
-        const validarUnico = (idInput, nombreCampo, mensajeError) => {
-            $(`#${idInput}`).on("blur", function () {
-                const valor = $(this).val();
-                if (!valor)
-                    return; // Si está vacío no comprobamos
-                $.get(`./php/comprobar.php?campo=${nombreCampo}&valor=${valor}`, (res) => {
-                    if (res.ocupado) {
-                        $(this).addClass("is-invalid").removeClass("is-valid");
-                        // Suponiendo que tienes un div de error con clase 'invalid-feedback'
-                        $(`#error-${idInput}`).text(mensajeError).show();
-                    }
-                    else {
-                        $(this).addClass("is-valid").removeClass("is-invalid");
-                        $(`#error-${idInput}`).hide();
-                    }
-                });
-            });
-        };
-        // La usas así de fácil:
-        validarUnico("nombreRegistro", "nombre", "Este nombre ya está pillado");
-        validarUnico("emailRegistro", "email", "Este email ya está registrado");
+        function comprobarDisponibilidadNombre(nombreABuscar) {
+            // Obtenemos los usuarios del localStorage
+            const datosUsuarios = localStorage.getItem("usuarios");
+            // Si no hay datos, significa que el nombre está disponible (porque no hay nadie)
+            if (!datosUsuarios) {
+                return true;
+            }
+            // Convertimos el texto del localStorage en un array de objetos
+            const usuariosExistentes = JSON.parse(datosUsuarios);
+            // Buscamos si algún usuario tiene ese nombre (ignorando mayúsculas/minúsculas)
+            const existe = usuariosExistentes.some((u) => u.nombre.toLowerCase() === nombreABuscar.toLowerCase());
+            // Si existe, devolvemos false (no está disponible)
+            return !existe;
+        }
         // Comprobar si tiene al menos un número
         function tieneNumero(texto) {
             const patron = /\d/; // El símbolo \d busca cualquier dígito del 0 al 9
@@ -690,7 +682,7 @@ export const VistaRegistro = {
         // Comprobar si tiene un carácter especial
         function tieneCaracterEspecial(texto) {
             // Definimos los símbolos que queremos permitir/buscar
-            const patron = /[!@#$%^&*(),.?":{}|<>]/;
+            const patron = /[!@#$_%^&*(),.?":{}|<>]/;
             return patron.test(texto);
         }
         function coinciden(valor1, valor2) {

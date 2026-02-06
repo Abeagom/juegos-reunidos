@@ -51,7 +51,7 @@ export const VistaRegistro = {
                         <span class="material-icons fs-6">close</span> Un número
                     </small>
                     <small id="contrasenaEspecial" class="text-muted d-flex align-items-center gap-2">
-                        <span class="material-icons fs-6">close</span> Carácter especial (!@#$%^&*...)
+                        <span class="material-icons fs-6">close</span> Carácter especial (!@#$_%^&*...)
                     </small>
                 </div>
                 <small id="contrasenaVacia" class="text-danger fw-bold d-none mt-1">La contraseña no puede estar vacía</small>
@@ -89,12 +89,12 @@ export const VistaRegistro = {
                 <label class="form-label fw-bold d-block">Sexo:</label>
                 <div class="d-flex gap-3 pt-1">
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoH" value="hombre">
-                        <label class="form-check-label" for="sexoH">Hombre</label>
+                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoH" value="masculino">
+                        <label class="form-check-label" for="sexoH">Masculino</label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoM" value="mujer">
-                        <label class="form-check-label" for="sexoM">Mujer</label>
+                        <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoM" value="femenino">
+                        <label class="form-check-label" for="sexoM">Femenino</label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="sexoRegistro" id="sexoO" value="otro">
@@ -537,7 +537,7 @@ export const VistaRegistro = {
 
             // VALIDACIÓN DE SEXO
             const sexoValor = obtenerSexoSeleccionado();
-            const sexosPermitidos = ["hombre", "mujer", "otro"];
+            const sexosPermitidos = ["masculino", "femenino", "otro"];
 
             if (!sexoValor || !sexosPermitidos.includes(sexoValor)) {
                 mostrarError("sexoVacio", true);
@@ -747,7 +747,7 @@ export const VistaRegistro = {
         // Comprobar si tiene un carácter especial
         function tieneCaracterEspecial(texto: string): boolean {
             // Definimos los símbolos que queremos permitir/buscar
-            const patron = /[!@#$%^&*(),.?":{}|<>]/;
+            const patron = /[!@#$_%^&*(),.?":{}|<>]/;
             return patron.test(texto);
         }
 
