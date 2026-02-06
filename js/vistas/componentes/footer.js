@@ -10,7 +10,7 @@ export const ComponenteFooter = {
                 
                 <div class="footer-right d-flex align-items-center gap-3">
                     <span>Alberto Beas</span>
-                    <a href="https://github.com/Abeagom" target="_blank" class="text-white">
+                    <a href="https://github.com/Abeagom/juegos-reunidos" target="_blank" class="text-white">
                         <i class="fab fa-github fs-2 opacity-100-hover transition-opacity"></i>
                     </a>
                 </div>

@@ -28,12 +28,15 @@ $sql = "INSERT INTO usuarios (nombre, email, contrasena, tipo, fecha_nacimiento,
 
 $stmt = $conn->prepare($sql);
 
+$hash = password_hash($datos['contrasena'], PASSWORD_DEFAULT); 
+
 // 5. Vinculamos los datos que vienen del TypeScript ($datos) con los "?"
 // La cadena "sssssssssi" significa: 9 strings y 1 entero al final
 $stmt->bind_param("sssssssssi", 
     $datos['nombre'], 
-    $datos['email'], 
-    $datos['contrasena'], 
+    $datos['email'],
+    $hash, 
+    // $datos['contrasena'], 
     $datos['tipo'], 
     $datos['fecha_nacimiento'], 
     $datos['telefono'], 

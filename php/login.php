@@ -20,8 +20,8 @@ if ($conn->connect_error) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id, nombre, email, tipo, fecha_nacimiento, telefono, sexo, dispositivo, aficiones, cantidad_juegos FROM usuarios WHERE nombre = ? AND contrasena = ?");
-$stmt->bind_param("ss", $nombre, $contrasena);
+$stmt = $conn->prepare("SELECT id, nombre, contrasena, email, tipo, fecha_nacimiento, telefono, sexo, dispositivo, aficiones, cantidad_juegos FROM usuarios WHERE nombre = ?");
+$stmt->bind_param("s", $nombre);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -36,10 +36,26 @@ while($row = mysqli_fetch_assoc($result))
 
 // Lógica para que el Frontend entienda si el login fue correcto
 if ($i > 0) {
-    echo json_encode([
+    
+    $hashBD = $rawdata[0]['contrasena'];
+
+    if (!password_verify($contrasena, $hashBD)) {
+            
+        echo json_encode([
+            "exito" => false, 
+            "mensaje" => "Credenciales incorrectas"
+            ]);
+            exit;
+
+    }else{
+        unset($rawdata[0]['contrasena']); // Por seguridad, no enviamos el hash al frontend
+
+        echo json_encode([
         "exito" => true, 
         "usuario" => $rawdata[0] // Enviamos el primer usuario encontrado
-    ]);
+        ]);
+    }
+
 } else {
     echo json_encode([
         "exito" => false, 
